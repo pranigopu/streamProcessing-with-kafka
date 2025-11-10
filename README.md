@@ -8,6 +8,7 @@
 
 - [Requirements](#requirements)
 - [Setting up Kafka cluster](#setting-up-kafka-cluster)
+- [After installation](#after-installation)
 
 ---
 
@@ -23,3 +24,4 @@
 docker-compose -f docker-compose.yaml up -d
 ```
 
+# After installation
