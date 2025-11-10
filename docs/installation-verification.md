@@ -27,8 +27,14 @@ http://localhost:8080/
 
 Expected outputs:
 
+*Topics*
+
 ![](./resources/kafka-ui-after-deployment--topics.png)
 
+*Consumers*
+
 ![](./resources/kafka-ui-after-deployment--consumers.png)
+
+*Brokers*
 
 ![](./resources/kafka-ui-after-deployment--brokers.png)

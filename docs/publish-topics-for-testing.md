@@ -4,4 +4,9 @@
 
 ---
 
-Go
+Execute the Bash terminal of the `jumphost` container:
+
+```
+docker exec -it data-source bash
+```
+
