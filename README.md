@@ -7,4 +7,5 @@
 **Contents**:
 
 1. [Setting Up](./docs/setting-up.md)
-2. [Installation Verification](./docs/installation-verification.md)
+2. [Kafka Connector Configurations](./docs/kafka-connector-configurations.md)
+3. [Installation Verification](./docs/installation-verification.md)
