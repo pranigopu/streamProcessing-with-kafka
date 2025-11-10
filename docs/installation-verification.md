@@ -1,6 +1,6 @@
-> [<< Home](../README.md)
+> [Previous: Setting Up](../setting-up.md)
 
-<h1>VERIFICATION</h1>
+<h1>INSTALLATION VERIFICATION</h1>
 
 ---
 
