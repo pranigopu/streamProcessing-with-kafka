@@ -52,7 +52,7 @@
     {
       "order_id": 8,
       "product_name": "Small Frozen Towels",
-      "quantity": 91,
+      "quantity": -91,
       "price": 406.76,
       "order_date": "2005-05-10"
     },
@@ -164,7 +164,7 @@
     {
       "order_id": 24,
       "product_name": "Generic Soft Pants",
-      "quantity": 18,
+      "quantity": -18,
       "price": 411.04,
       "order_date": "2014-08-17"
     },
@@ -207,7 +207,7 @@
       "order_id": 30,
       "product_name": "Elegant Soft Hat",
       "quantity": 28,
-      "price": 1007.73,
+      "price": -1007.73,
       "order_date": "2015-02-11"
     },
     {

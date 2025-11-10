@@ -116,34 +116,34 @@ services:
       timeout: 5s
       retries: 5
 
-  jumphost:
-    build:
-      context: . # Defines either a path to a directory containing a Dockerfile, or a URL to a Git repository
-      # NOTE: When the value supplied is a relative path, it is interpreted as relative to the project directory; compose warns you about the absolute path used to define the build context as those prevent the Compose file from being portable
-      # REFERENCE: https://docs.docker.com/reference/compose-file/build/#context
-      dockerfile: Dockerfile.jumphost # Sets an alternate Dockerfile (a relative path is resolved from the build context); defaults to 'Dockerfile' if not specified
-      # REFERENCE: https://docs.docker.com/reference/compose-file/build/#dockerfile
-    image: jumphost:latest # Name to tag the built image (format = image_name:version_tag)
-    container_name: jumphost
-    depends_on:
-      - kafka
-      - postgres
-    command: sleep infinity
-    networks:
-      - kafka-network
-    environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: kafkadb
-      POSTGRES_USER: kafkauser
-      POSTGRES_PASSWORD: kafkapass
-    stdin_open: true
-    tty: true
-    volumes:
-      - ./scripts:/scripts
-      - jumphost-home:/root # Persist home directory (bashrc, aliases, etc.)
-      - jumphost-data:/data # Persist data directory (JSON Server db)
+  # jumphost:
+  #   build:
+  #     context: . # Defines either a path to a directory containing a Dockerfile, or a URL to a Git repository
+  #     # NOTE: When the value supplied is a relative path, it is interpreted as relative to the project directory; compose warns you about the absolute path used to define the build context as those prevent the Compose file from being portable
+  #     # REFERENCE: https://docs.docker.com/reference/compose-file/build/#context
+  #     dockerfile: Dockerfile.jumphost # Sets an alternate Dockerfile (a relative path is resolved from the build context); defaults to 'Dockerfile' if not specified
+  #     # REFERENCE: https://docs.docker.com/reference/compose-file/build/#dockerfile
+  #   image: jumphost:latest # Name to tag the built image (format = image_name:version_tag)
+  #   container_name: jumphost
+  #   depends_on:
+  #     - kafka
+  #     - postgres
+  #   command: sleep infinity
+  #   networks:
+  #     - kafka-network
+  #   environment:
+  #     KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+  #     POSTGRES_HOST: postgres
+  #     POSTGRES_PORT: 5432
+  #     POSTGRES_DB: kafkadb
+  #     POSTGRES_USER: kafkauser
+  #     POSTGRES_PASSWORD: kafkapass
+  #   stdin_open: true
+  #   tty: true
+  #   volumes:
+  #     - ./scripts:/scripts
+  #     - jumphost-home:/root # Persist home directory (bashrc, aliases, etc.)
+  #     - jumphost-data:/data # Persist data directory (JSON Server db)
   
   # Kafka configuration (creates topics for Kafka running in 'kafka' container)
   kafka-init:

@@ -4,7 +4,7 @@
 
 ---
 
-# HTTP source connector configurations
+# HTTP source connector configuration
 **JSON**:
 
 ```json
@@ -52,3 +52,29 @@ Explanation for certain parameters:
 > - [*Configuration Reference for HTTP Source Connector for Confluent Platform*, **docs.confluent.io**](https://docs.confluent.io/kafka-connectors/http-source/current/configuration.html)
 > - [*HTTP Source Connector for Confluent Cloud*, **docs.confluent.io/cloud/current**](https://docs.confluent.io/cloud/current/connectors/cc-http-source.html) (for example usage)
 > - [*Kafka Connect Deep Dive – Converters and Serialization Explained*, **www.confluent.io/blog**](https://www.confluent.io/blog/kafka-connect-deep-dive-converters-serialization-explained/)
+
+# PostreSQL sink connector configuration
+```json
+{
+  "name": "postgres-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "enriched_orders",
+    "connection.url": "jdbc:postgresql://host.docker.internal:5432/kafkadb",
+    "connection.user": "kafkauser",
+    "connection.password": "kafkapass",
+    
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "true",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    
+    "auto.create": "true",
+    "insert.mode": "insert",
+    "delete.enabled": "true",
+    "table.name.format": "enriched_orders",
+    "pk.mode": "record_key",
+    "pk.fields": "order_id"
+  }
+}
+```
