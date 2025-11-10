@@ -1,4 +1,4 @@
-> [Previous: Setting Up](../setting-up.md)
+> [Previous: Setting Up](./setting-up.md)
 
 <h1>INSTALLATION VERIFICATION</h1>
 
