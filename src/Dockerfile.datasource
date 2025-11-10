@@ -28,38 +28,11 @@ RUN npm install -g json-server
 # Create data directory
 RUN mkdir -p /data
 
-# Copy sample JSON Server database from external file
-COPY data/raw_orders.json /data/raw_orders.json
-
-# Setup bash aliases and environment
-RUN cat >> /root/.bashrc << 'EOF'
-
-# JSON Server aliases
-alias json-server-start="json-server --watch /data/raw_orders.json --host 0.0.0.0 --port 3000"
-alias json-server-bg="nohup json-server --watch /data/raw_orders.json --host 0.0.0.0 --port 3000 > /var/log/json-server.log 2>&1 &"
-
-# Utility aliases
-alias ll="ls -lah"
-
-# Welcome message
-echo ""
-echo "=========================================="
-echo "  Data Source Container Ready!"
-echo "=========================================="
-echo ""
-echo "Available tools:"
-echo "  - JSON Server (json-server-start; this is run by default)"
-echo ""
-echo "Quick commands:"
-echo "  json-server-start       - Start JSON Server on port 3000"
-echo ""
-echo "Environment:"
-echo "  JSON Server data: /data/raw_orders.json"
-echo ""
-EOF
+RUN echo "Run to start server: json-server --watch /data/raw_orders.json --host 0.0.0.0 --port 3000"
+RUN echo "JSON Server data: /data/raw_orders.json"
 
 # Set working directory
 WORKDIR /root
 
 # Keep JSON server running
-CMD ["json-server", "--watch", "../data/raw_orders.json", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["json-server", "--watch", "/data/raw_orders.json", "--host", "0.0.0.0", "--port", "3000"]

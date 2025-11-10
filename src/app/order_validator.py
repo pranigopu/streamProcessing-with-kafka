@@ -5,13 +5,13 @@
 - All logs output to stdout/stderr for Docker logs
 '''
 
-from kafka import KafkaConsumer, KafkaProducer
-from kafka.errors import KafkaError
-import json
-import sys
-import os
-import logging
-from datetime import datetime
+from kafka import KafkaConsumer, KafkaProducer # Kafka client libraries
+from kafka.errors import KafkaError # For Kafka error handling
+import json # For JSON serialization/deserialization
+import sys # For sys.exit and stdout/stderr access
+import os # For environment variable access
+import logging # For logging configuration and usage
+from datetime import datetime, timedelta # For deserialising UNIX timestamps
 
 #############################################################
 # INITIAL SETTINGS
@@ -53,6 +53,7 @@ REQUIRED_FIELDS = [
 # - Main loop definition (including information logging and graceful shutdown logic)
 #############################################################
 
+# HELPER FOR `create_consumer`
 def safe_deserializer(m):
         if m is None:
             return None
@@ -90,6 +91,37 @@ def create_consumer() -> KafkaConsumer:
     )
 
 #================================================
+# HELPER FOR `create_producer`
+def create_schema_message(payload: dict) -> dict:
+    '''
+    Wrap payload with JSON schema for Kafka Connect compatibility.
+    
+    ---
+    
+    PARAMETERS:
+    - `payload` (dict): The actual message data
+    
+    RETURNS:
+    - (dict): Message with embedded schema
+    '''
+
+    return {
+        "schema": {
+            "type": "struct",
+            "fields": [
+                {"type": "string", "optional": True, "field": "order_id"},
+                {"type": "string", "optional": True, "field": "product_name"},
+                {"type": "double", "optional": True, "field": "quantity"},
+                {"type": "double", "optional": True, "field": "price"},
+                {"type": "string", "optional": True, "field": "order_date"},
+                {"type": "double", "optional": True, "field": "total_price"}
+            ],
+            "optional": False,
+            "name": "enriched_order"
+        },
+        "payload": payload
+    }
+
 def create_producer():
     '''
     Create and configure Kafka producer with reliability settings.
@@ -110,41 +142,7 @@ def create_producer():
     )
 
 #================================================
-def create_schema_message(payload: dict) -> dict:
-    '''
-    Wrap payload with JSON schema for Kafka Connect compatibility.
-    
-    ---
-    
-    PARAMETERS:
-    - `payload` (dict): The actual message data
-    
-    RETURNS:
-    - (dict): Message with embedded schema
-    '''
-
-    return {
-        "schema": {
-            "type": "struct",
-            "fields": [
-                {"type": "string", "optional": False, "field": "order_id"},
-                {"type": "string", "optional": False, "field": "product_name"},
-                {"type": "double", "optional": False, "field": "quantity"},
-                {"type": "double", "optional": False, "field": "price"},
-                {"type": "string", "optional": False, "field": "order_date"},
-                {"type": "double", "optional": False, "field": "total"},
-                {"type": "string", "optional": False, "field": "processed_at"},
-                {"type": "string", "optional": False, "field": "validator_version"},
-                {"type": "string", "optional": False, "field": "validation_status"},
-                {"type": "string", "optional": False, "field": "validation_message"}
-            ],
-            "optional": False,
-            "name": "enriched_order"
-        },
-        "payload": payload
-    }
-
-#================================================
+# HELPER FOR `validate_and_enrich_message`
 def is_valid_number(value:str) -> bool:
     '''
     Small helper to check if the string is a valid number.
@@ -152,7 +150,10 @@ def is_valid_number(value:str) -> bool:
     ---
 
     PARAMETERS:
+    - `value` (str): Value to check
 
+    RETURNS:
+    - (bool): True if valid number, False otherwise
     '''
 
     try:
@@ -161,7 +162,6 @@ def is_valid_number(value:str) -> bool:
     except:
         return False
 
-#================================================
 def validate_and_enrich_message(message:dict) -> tuple[dict, bool, str]:
     '''
     Validate and enrich an order message.
@@ -185,11 +185,7 @@ def validate_and_enrich_message(message:dict) -> tuple[dict, bool, str]:
         # Check for required fields
         missing_fields = [field for field in REQUIRED_FIELDS if field not in message]
         if missing_fields:
-            return (
-                message,
-                False,
-                f"Missing required fields: {', '.join(missing_fields)}"
-            )
+            return message, False, f"Missing required fields: {', '.join(missing_fields)}"
 
         # Validate price
         if not is_valid_number(message["price"]):
@@ -216,18 +212,32 @@ def validate_and_enrich_message(message:dict) -> tuple[dict, bool, str]:
             return message, False, '; '.join(error_messages)
         
         # Enrich the message
-        enriched_message = message.copy()  # Don't modify original
-        enriched_message["total"] = round(message["quantity"] * message["price"], 2)
-        enriched_message["processed_at"] = datetime.now().strftime("%H:%M:%S")
-        enriched_message["validator_version"] = "1.0"
+        message["total_price"] = round(message["quantity"] * message["price"], 2)
         
-        return enriched_message, True, "Validated and enriched successfully"
+        return message, True, "Validated and enriched successfully"
     
     except Exception as e:
         logger.error(f"Unexpected error during validation: {str(e)}")
         return message, False, f"Validation error: {str(e)}"
 
 #================================================
+# HELPER FOR `process_message` to deserialise UNIX timestamps
+def epoch_days_to_date_string(days: int) -> str:
+    '''Convert Kafka Date (days since epoch) to YYYY-MM-DD string.
+    
+    ---
+
+    PARAMETERS:
+    - `days` (int): Number of days since epoch (1970-01-01)
+
+    RETURNS:
+    - (str): Date string in 'YYYY-MM-DD' format
+    '''
+
+    epoch = datetime(1970, 1, 1)
+    date_obj = epoch + timedelta(days=days)
+    return date_obj.strftime('%Y-%m-%d')
+
 def process_message(message_value:dict, producer:KafkaProducer) -> bool:
     '''
     Process a single message: validate, enrich, and send to appropriate topic.
@@ -242,43 +252,37 @@ def process_message(message_value:dict, producer:KafkaProducer) -> bool:
     - (bool): True if message was successfully processed and sent
     '''
     try:
-        # Add idempotency check (i.e. skip if already processed)
-        if "processed_at" in message_value:
-            logger.warning(
-                f"Message order_id={message_value.get('order_id', 'unknown')} "
-                f"already processed (has 'processed_at'), skipping duplicate"
-            )
-            return True
-
         # Validate and enrich
         enriched_message, is_valid, status_message = validate_and_enrich_message(message_value)
 
+        # Deserialise UNIX timestamp if present
+        if str(enriched_message["order_date"]).isdigit():
+            enriched_message["order_date"] = epoch_days_to_date_string(int(enriched_message["order_date"]))
+        epoch_days_to_date_string
+
         # Determine target topic
         target_topic = ENRICHED_ORDERS_TOPIC if is_valid else INVALID_ORDERS_TOPIC
-        status_icon = "VALID" if is_valid else "INVALID"
-        
-        # Add metadata
-        enriched_message["validation_status"] = "valid" if is_valid else "invalid"
-        enriched_message["validation_message"] = status_message
-        
+        validity_status = "VALID" if is_valid else "INVALID"
+                
         # Extract order_id to use as message key for partition distribution
-        order_id = message_value.get('order_id', 'unknown')
+        order_id = message_value.get("order_id", "unknown")
         message_key = str(order_id)
         
         # Log processing result
         logger.info(
-            f"{status_icon} Order {order_id}: {status_message} "
-            f"→ {target_topic}"
+            f"{validity_status} Order {order_id}: {status_message} "
+            f"-> {target_topic}"
         )
         
         # Send with key for proper partition distribution
+        # NOTE: This is not essential here but good practice
         future = producer.send(
             target_topic, 
-            key=message_key,  # Add key: same order_id → same partition
+            key=message_key, # Add key: same order_id -> same partition
             value=enriched_message
         )
         
-        # Wait for acknowledgment (blocking for idempotency)
+        # Wait for acknowledgment from Kafka topic partitions
         record_metadata = future.get(timeout=10)
         
         logger.info(
@@ -335,6 +339,8 @@ def main():
             for message in consumer:
                 try:
                     message_value = message.value
+                    logger.info(f"MESSAGE_VALUE = {message_value}")
+
                     messages_processed += 1
                     
                     # Log incoming message
@@ -353,9 +359,9 @@ def main():
                         
                         # Commit offset only after successful processing
                         consumer.commit()
-                        
-                        # Update counters
-                        if message_value.get('validation_status') == 'valid':
+
+                        # Update stats
+                        if "total_price" in message_value:
                             messages_valid += 1
                         else:
                             messages_invalid += 1

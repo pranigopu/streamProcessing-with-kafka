@@ -1,0 +1,13 @@
+FROM confluentinc/cp-kafka-connect:7.5.0
+
+# Install HTTP Source Connector
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-http-source:latest
+
+# Install JDBC PostgreSQL Sink Connector
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:latest
+
+# Verify installation
+RUN echo "Installed connectors:" && \
+    ls -la /usr/share/confluent-hub-components/
+
+# The base image's entrypoint will handle starting Kafka Connect
