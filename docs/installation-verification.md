@@ -7,7 +7,7 @@
 **Contents**:
 
 - [Verify if all containers have been deployed](#verify-if-all-containers-have-been-deployed)
-- [Verify if Kafka UI is working (enter in browser)](#verify-if-kafka-ui-is-working-enter-in-browser)
+- [Verify if Kafka UI is working (via browser)](#verify-if-kafka-ui-is-working-via-browser)
 
 ---
 
@@ -20,7 +20,7 @@ Expected output:
 
 ![](./resources/all-deployed-docker-containers.png)
 
-# Verify if Kafka UI is working (enter in browser)
+# Verify if Kafka UI is working (via browser)
 ```
 http://localhost:8080/
 ```
