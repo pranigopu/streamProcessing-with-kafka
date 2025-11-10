@@ -1,0 +1,92 @@
+FROM ubuntu:22.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Set environment variables
+ENV KAFKA_VERSION=3.8.1
+ENV SCALA_VERSION=2.13
+ENV NODE_VERSION=20.x
+ENV PATH="$PATH:/opt/kafka/bin"
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    default-jdk \
+    vim \
+    nano \
+    jq \
+    postgresql-client \
+    net-tools \
+    telnet \
+    netcat \
+    git \
+    gnupg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install Kafka
+RUN cd /opt \
+    && wget https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz \
+    && tar -xzf kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz \
+    && ln -s kafka_${SCALA_VERSION}-${KAFKA_VERSION} kafka \
+    && rm kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz
+
+# Create data directory
+RUN mkdir -p /data
+
+# Create .pgpass for PostgreSQL passwordless authentication
+RUN echo "postgres:5432:kafkadb:kafkauser:kafkapass" > /root/.pgpass \
+    && chmod 600 /root/.pgpass
+
+# Setup bash aliases and environment
+RUN cat >> /root/.bashrc << 'EOF'
+
+# Kafka aliases
+alias kafka-topics="kafka-topics.sh --bootstrap-server kafka:29092"
+alias kafka-producer="kafka-console-producer.sh --bootstrap-server kafka:29092"
+alias kafka-consumer="kafka-console-consumer.sh --bootstrap-server kafka:29092"
+alias kafka-list="kafka-topics.sh --bootstrap-server kafka:29092 --list"
+
+# PostgreSQL aliases
+alias pgconnect="psql -h postgres -U kafkauser -d kafkadb"
+alias pg-tables="psql -h postgres -U kafkauser -d kafkadb -c '\dt kafka_data.*'"
+alias pg-orders="psql -h postgres -U kafkauser -d kafkadb -c 'SELECT * FROM kafka_data.orders;'"
+alias pg-products="psql -h postgres -U kafkauser -d kafkadb -c 'SELECT * FROM kafka_data.products;'"
+alias pg-users="psql -h postgres -U kafkauser -d kafkadb -c 'SELECT * FROM kafka_data.users;'"
+
+# Utility aliases
+alias ll="ls -lah"
+alias kafka-health="kafka-broker-api-versions.sh --bootstrap-server kafka:29092"
+
+RUN source ~/.bashrc
+
+# Welcome message
+echo ""
+echo "=========================================="
+echo "  Jumphost Container Ready!"
+echo "=========================================="
+echo ""
+echo "Available tools:"
+echo "  - Kafka CLI tools (kafka-topics, kafka-producer, kafka-consumer)"
+echo "  - PostgreSQL Client (pgconnect)"
+echo "  - jq, curl, wget, vim, nano"
+echo ""
+echo "Quick commands:"
+echo "  kafka-list              - List Kafka topics"
+echo "  json-server-start       - Start JSON Server on port 3000"
+echo "  pgconnect               - Connect to PostgreSQL"
+echo "  pg-tables               - List PostgreSQL tables"
+echo ""
+echo "Environment:"
+echo "  Kafka: kafka:29092"
+echo "  PostgreSQL: postgres:5432 (kafkadb)"
+echo ""
+EOF
+
+# Set working directory
+WORKDIR /root
+
+# Keep container running
+CMD ["sleep", "infinity"]

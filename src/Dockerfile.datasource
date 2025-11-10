@@ -1,0 +1,65 @@
+FROM ubuntu:22.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Set environment variables
+ENV NODE_VERSION=20.x
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    net-tools \
+    telnet \
+    netcat \
+    git \
+    gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+    # The above deletes APT package cache to reduce Docker image size (this directory contains package list metadata downloaded by apt-get update)
+
+# Install JSON Server globally
+RUN npm install -g json-server
+
+# Create data directory
+RUN mkdir -p /data
+
+# Copy sample JSON Server database from external file
+COPY data/raw_orders.json /data/raw_orders.json
+
+# Setup bash aliases and environment
+RUN cat >> /root/.bashrc << 'EOF'
+
+# JSON Server aliases
+alias json-server-start="json-server --watch /data/raw_orders.json --host 0.0.0.0 --port 3000"
+alias json-server-bg="nohup json-server --watch /data/raw_orders.json --host 0.0.0.0 --port 3000 > /var/log/json-server.log 2>&1 &"
+
+# Utility aliases
+alias ll="ls -lah"
+
+# Welcome message
+echo ""
+echo "=========================================="
+echo "  Data Source Container Ready!"
+echo "=========================================="
+echo ""
+echo "Available tools:"
+echo "  - JSON Server (json-server-start; this is run by default)"
+echo ""
+echo "Quick commands:"
+echo "  json-server-start       - Start JSON Server on port 3000"
+echo ""
+echo "Environment:"
+echo "  JSON Server data: /data/raw_orders.json"
+echo ""
+EOF
+
+# Set working directory
+WORKDIR /root
+
+# Keep JSON server running
+CMD ["json-server", "--watch", "../data/raw_orders.json", "--host", "0.0.0.0", "--port", "3000"]
