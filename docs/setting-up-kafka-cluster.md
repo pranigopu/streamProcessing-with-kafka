@@ -15,6 +15,9 @@
   - [Prerequisites](#prerequisites)
   - [Docker Compose for Kafka cluster](#docker-compose-for-kafka-cluster)
   - [Docker Compose for Kafka Connect](#docker-compose-for-kafka-connect)
+    - [Issues and fixes](#issues-and-fixes)
+      - [Use of Kafka Connect 7.5.0 instead of latest version](#use-of-kafka-connect-750-instead-of-latest-version)
+      - [Use of Docker file instead of in-line commands within Docker Compose](#use-of-docker-file-instead-of-in-line-commands-within-docker-compose)
   - [Docker Compose for Kafka initialiser (init-container pattern)](#docker-compose-for-kafka-initialiser-init-container-pattern)
   - [Docker Compose for Kafka UI](#docker-compose-for-kafka-ui)
   - [Docker networks and volumes to be added to Docker Compose](#docker-networks-and-volumes-to-be-added-to-docker-compose)
@@ -204,15 +207,51 @@ service:
 
 Referenced Dockerfile is available at: [`src/Dockerfile.connect`](../src/Dockerfile.connect)
 
----
+### Issues and fixes
+#### Use of Kafka Connect 7.5.0 instead of latest version
+The following issue was faced when using the following configuration for the HTTP source connector:
 
-**NOTE: Use of Kafka Connect 7.5.0**:
+```
+curl --request POST \
+  --url http://localhost:8083/connectors/ \
+  --header 'Content-Type: application/json' \
+  --data '
+{
+  "name": "http-source",
+  "config": {
+    "connector.class": "io.confluent.connect.http.HttpSourceConnector",
+    "topic.name.pattern": "orders",
+    "url": "http://data-source:3000/orders",
+    "tasks.max": "1",
+    "http.offset.mode": "SIMPLE_INCREMENTING",
+    "http.initial.offset": "0",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "confluent.topic.bootstrap.servers": "kafka:29092",
+    "confluent.license": "",
+    "confluent.topic.replication.factor": "1"
+  }
+}'
+```
 
+Then, the status was checked using:
 
+```
+curl --request GET \
+  --url http://localhost:8083/connectors/http-source/status \
+  --header 'Content-Type: application/json'
+```
 
----
+The response included:
 
-**NOTE: Use of Docker file**:
+```
+{"name":"http-source-orders","connector":{"state":"FAILED","worker_id":"kafka-connect:8083","trace":"java.lang.NoSuchMethodError: 'org.apache.kafka.connect.util.TopicAdmin$NewTopicBuilder org.apache.kafka.connect.util.TopicAdmin$NewTopicBuilder.minInSyncReplicas(short) ...
+```
+
+`java.lang.NoSuchMethodError` indicated a version compatibility issue, which is why I downgraded the Kafka Connect version to 7.5.0 from whatever was the latest version. This led to another issue, which is discussed in the next section.
+
+#### Use of Docker file instead of in-line commands within Docker Compose
+**NOTE**: *The following was observed with Kafka Connect 7.5.0.*
 
 Earlier, the following Docker Compose configuration was used:
 
@@ -259,7 +298,7 @@ service:
         wait
 ```
 
-However, this led to silent failures
+However, this seemed to silent failures
 
 ## Docker Compose for Kafka initialiser (init-container pattern)
 ```yaml
