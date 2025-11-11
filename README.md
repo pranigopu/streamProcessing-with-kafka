@@ -109,16 +109,22 @@ curl --request POST \
     - Here, again, you can use cURL or Requestly/Postman collection
 8. Add orders to JSON server's data source:
     - POST `http://localhost:3000/orders`:
-        - Request body: {
-              "order_id": 155,
-              "product_name": "Autonomous Mobile Robot - WASP",
-              "quantity": 2,
-              "price": 200,
-              "order_date": "2025-11-09",
-              "id": "64b7"
-      }
-        - headers = {"Content-Type": "application/json"}
-    - Here, again, you can use cURL or Requestly/Postman collection
+    - headers = `{"Content-Type": "application/json"}`
+    - Request body:
+
+```
+{
+  "order_id": 155,
+  "product_name": "Autonomous Mobile Robot - WASP",
+  "quantity": 2,
+  "price": 200,
+  "order_date": "2025-11-09",
+  "id": "64b7"
+}
+```
+
+*Here, again, you can use cURL or Requestly/Postman collection.*
+
 9. Verify that the messages are published to the appropriate topics in Kafka UI
 
 **NOTE**: `order-validator` consumers the `orders` streams, and publishes messages onto one of:
