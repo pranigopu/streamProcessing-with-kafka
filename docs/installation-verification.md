@@ -1,4 +1,4 @@
-> [Previous: Setting Up](./setting-up.md)
+> [Previous: Kafka Connector Configurations](./kafka-connector-configurations.md)
 
 <h1>INSTALLATION VERIFICATION</h1>
 

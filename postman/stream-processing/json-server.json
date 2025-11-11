@@ -1,0 +1,106 @@
+{
+  "info": {
+    "_postman_id": "c4fb5cf4-d360-421a-89de-3d519b9b8f44",
+    "name": "json-server",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "id": "1c11b4f7-287b-40c7-a286-a46db92e9215",
+      "name": "delete-one-order",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/orders/64b7",
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "orders",
+            "64b7"
+          ],
+          "protocol": "http"
+        }
+      },
+      "response": [],
+      "event": []
+    },
+    {
+      "id": "59794c04-4b3c-4e18-9772-bbfcf8bdd3db",
+      "name": "get-all-orders",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/orders",
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "orders"
+          ],
+          "protocol": "http"
+        }
+      },
+      "response": [],
+      "event": []
+    },
+    {
+      "id": "f68ed482-fb84-4e81-93d2-e4a2dc8e9cd7",
+      "name": "get-order-with-order-id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/orders",
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "orders"
+          ],
+          "protocol": "http",
+          "query": [
+            {
+              "key": "order_id",
+              "value": "e1f8a678-9012-3456-7890-12345678cdef",
+              "disabled": false
+            }
+          ]
+        }
+      },
+      "response": [],
+      "event": []
+    },
+    {
+      "id": "0a0374a6-efa9-40f8-8d1c-877b444cf4fb",
+      "name": "post-one-order",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": \"6abe7344-447b-447b-bc82-80cddc9d6ad6\",\n  \"product_name\": \"Autonomous Mobile Robot - WASP\",\n  \"quantity\": 2,\n  \"price\": 200,\n  \"order_date\": \"2025-11-09\",\n  \"id\": \"64b7\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/orders",
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "orders"
+          ],
+          "protocol": "http"
+        }
+      },
+      "response": [],
+      "event": []
+    }
+  ]
+}

@@ -6,7 +6,7 @@
 
 - [Kafka architecture](#kafka-architecture)
   - [Stream processing vs. message broker](#stream-processing-vs-message-broker)
-  - [Cluster, broker, partition, topics and messages](#cluster-broker-partition-topics-and-messages)
+  - [Cluster, broker, topics, partition and messages](#cluster-broker-topics-partition-and-messages)
   - [Moving from ZooKeeper to KRaft](#moving-from-zookeeper-to-kraft)
     - [Basics](#basics)
     - [KRaft cluster](#kraft-cluster)
@@ -22,9 +22,30 @@
 ---
 
 # Kafka architecture
-## Stream processing vs. message broker
+> **Read about Kafka basics here**: [`pranav-gopalkrishna`/`learning-kafka`, **github.com**](https://github.com/pranav-gopalkrishna/learning-kafka)
 
-## Cluster, broker, partition, topics and messages
+## Stream processing vs. message broker
+- Stream processing analyses and acts upon a continuous flow of data in real-time
+- Message brokers store and forward individual messages between applications <br> **NOTE**: *Traditional message brokers delete them after processing*
+
+---
+
+Kafka uses message brokers for stream processing, but stream processing also includes:
+
+- Real-time analytics
+- Executing workflows
+- Managing distributed data and computation
+
+*Kafka does not delete messages after processing; the retention of messages is configurable.*
+
+## Cluster, broker, topics, partition and messages
+- Cluster: Allocated compute and memory for stream processing
+- Broker: Server within a Kafka cluster that handles messages (data records) for topics:
+    - Receives messages
+    - Stores messages
+    - Serves messages
+- Topic: A logically defined and uniquely identified message queue
+- Partition: 
 
 ## Moving from ZooKeeper to KRaft
 ### Basics

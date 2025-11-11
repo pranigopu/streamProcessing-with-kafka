@@ -9,7 +9,14 @@
     },
     "method": "GET",
     "queryParams": [],
-    "headers": [],
+    "headers": [
+      {
+        "id": 1762799380895,
+        "key": "Content-Type",
+        "value": "application/json",
+        "isEnabled": true
+      }
+    ],
     "body": null,
     "bodyContainer": {
       "text": "",
