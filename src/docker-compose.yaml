@@ -191,7 +191,6 @@ services:
           quantity NUMERIC(10, 2),
           price NUMERIC(10, 2),
           order_date VARCHAR(50),
-          id VARCHAR(50),
           total_price NUMERIC(10, 2),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
