@@ -42,7 +42,7 @@ Kafka uses message brokers for stream processing, but stream processing also inc
 *Kafka does not delete messages after processing; the retention of messages is configurable.*
 
 ## Cluster, broker, topics, partition and messages
-- Cluster: Allocated compute and memory for stream processing
+- Cluster: Allocated compute and memory for stream processing <br> **NOTE**: *A cluster can have one or more brokers*
 - Broker: Server within a Kafka cluster that handles messages (data records) for topics:
     - Receives messages
     - Stores messages
